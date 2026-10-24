@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Public Grain Distribution System - AI Citizen Assistant (All-in-One)</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Markdown parser for formatting bold text, bullet points & tables -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #0F3854;
+      --primary-hover: #19537B;
+      --accent-saffron: #D35400;
+      --bg-app: #F5F7FA;
+      --text-primary: #1C2833;
+      --text-secondary: #566573;
+      --border-color: #E2E8F0;
+      --user-bubble: #0F3854;
+      --bot-bubble: #FFFFFF;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 14px rgba(0,0,0,0.08);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-app);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top Nav */
+    .app-header {
+      background-color: #FFFFFF;
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .header-brand { display: flex; align-items: center; gap: 12px; }
+    .emblem-box {
+      width: 40px; height: 40px; border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #FF9933 0%, #FFFFFF 50%, #138808 100%);
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+      box-shadow: var(--shadow-sm); border: 1px solid #D5D8DC;
+    }
+    .header-brand h1 { font-size: 1.15rem; font-weight: 800; color: var(--primary); }
+    .sub-title { font-size: 0.72rem; color: var(--text-secondary); display: block; }
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .status-indicator {
+      display: flex; align-items: center; gap: 8px; font-size: 0.8rem;
+      font-weight: 600; padding: 6px 12px; border-radius: 20px;
+      background-color: #F8F9FA; border: 1px solid var(--border-color);
+    }
+    .status-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .status-dot.active { background-color: #27AE60; box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.2); }
+    .status-dot.warning { background-color: #E67E22; box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.2); }
+
+    /* Workspace */
+    .main-workspace { display: flex; flex: 1; height: calc(100vh - 65px); overflow: hidden; }
+
+    /* Side Panel */
+    .side-panel {
+      width: 320px; background-color: #FFFFFF; border-right: 1px solid var(--border-color);
+      padding: 20px 18px; display: flex; flex-direction: column; gap: 18px;
+      overflow-y: auto; flex-shrink: 0;
+    }
+    .panel-section h3 {
+      font-size: 0.82rem; font-weight: 700; color: var(--primary);
+      margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .doc-info-card {
+      background-color: #F8FAFC; border: 1px solid var(--border-color);
+      border-radius: var(--radius-md); padding: 14px;
+    }
+    .doc-badge {
+      display: inline-block; background-color: #E8F8F5; color: #117864;
+      border: 1px solid #A3E4D7; font-size: 0.72rem; font-weight: 700;
+      padding: 3px 8px; border-radius: 12px; margin-bottom: 8px;
+    }
+    .doc-desc { font-size: 0.76rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 12px; }
+    .doc-actions { display: flex; gap: 8px; }
+
+    .helpline-box {
+      background: linear-gradient(135deg, #FEF5E7 0%, #FDEBD0 100%);
+      border: 1px solid #FAD7A0; border-radius: var(--radius-md); padding: 14px;
+    }
+    .helpline-box h3 { color: #7E5109; }
+    .helpline-entry { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+    .helpline-entry strong { font-size: 1.15rem; color: #B9770E; }
+    .helpline-entry span { font-size: 0.75rem; color: #7E5109; }
+    .helpline-subtext { font-size: 0.72rem; color: #935116; line-height: 1.35; margin-top: 8px; }
+
+    .form-select {
+      width: 100%; padding: 8px 12px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color); font-size: 0.82rem;
+      background-color: #FFFFFF; outline: none; margin-bottom: 8px;
+    }
+
+    /* Chat Section */
+    .chat-section { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-app); position: relative; }
+
+    /* Quick Chips */
+    .suggestions-bar {
+      background-color: #FFFFFF; border-bottom: 1px solid var(--border-color);
+      padding: 8px 24px; display: flex; align-items: center; gap: 10px; overflow-x: auto; white-space: nowrap;
+    }
+    .suggestions-label { font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); flex-shrink: 0; }
+    .suggestions-scroll { display: flex; gap: 8px; overflow-x: auto; }
+    .chip-btn {
+      background-color: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 16px;
+      padding: 5px 12px; font-size: 0.76rem; color: var(--text-primary); cursor: pointer;
+      transition: all 0.2s ease; flex-shrink: 0;
+    }
+    .chip-btn:hover { background-color: var(--primary); color: #FFFFFF; border-color: var(--primary); }
+
+    /* Chat History */
+    .messages-container {
+      flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 18px;
+    }
+    .chat-row { display: flex; gap: 12px; max-width: 84%; animation: slideIn 0.25s ease-out; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .bot-row { align-self: flex-start; }
+    .user-row { align-self: flex-end; flex-direction: row-reverse; }
+
+    .avatar-icon {
+      width: 38px; height: 38px; border-radius: 50%; display: flex;
+      align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+    }
+    .bot-row .avatar-icon { background: linear-gradient(135deg, #0F3854, #1B4F72); color: #FFFFFF; border: 2px solid #AED6F1; }
+    .user-row .avatar-icon { background: linear-gradient(135deg, #E67E22, #D35400); color: #FFFFFF; }
+
+    .bubble-container {
+      padding: 14px 18px; border-radius: var(--radius-lg); font-size: 0.92rem; line-height: 1.6; box-shadow: var(--shadow-sm);
+    }
+    .bot-row .bubble-container { background-color: var(--bot-bubble); border: 1px solid var(--border-color); border-top-left-radius: 4px; }
+    .user-row .bubble-container { background-color: var(--user-bubble); color: #FFFFFF; border-top-right-radius: 4px; }
+
+    .bubble-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.76rem; }
+    .bot-name { font-weight: 700; color: var(--primary); }
+    .grounded-badge {
+      background-color: #E8F8F5; color: #117864; border: 1px solid #A3E4D7;
+      font-size: 0.68rem; font-weight: 700; padding: 1px 6px; border-radius: 10px;
+    }
+
+    .bubble-body p { margin-bottom: 8px; }
+    .bubble-body p:last-child { margin-bottom: 0; }
+    .bubble-body ul, .bubble-body ol { margin-left: 20px; margin-bottom: 8px; }
+    .bubble-body strong { font-weight: 700; color: var(--primary); }
+    .user-row .bubble-body strong { color: #FFFFFF; }
+
+    /* Typing Dots */
+    .typing-dots { display: flex; align-items: center; gap: 5px; padding: 6px 10px; }
+    .dot {
+      width: 6px; height: 6px; border-radius: 50%; background-color: var(--primary);
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+    .dot:nth-child(1) { animation-delay: -0.32s; }
+    .dot:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+    /* Input */
+    .input-container { background-color: #FFFFFF; border-top: 1px solid var(--border-color); padding: 14px 24px 10px 24px; }
+    .message-form {
+      display: flex; gap: 12px; background-color: #F8FAFC; border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-md); padding: 8px 12px; align-items: flex-end;
+    }
+    .message-form:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15, 56, 84, 0.15); background-color: #FFFFFF; }
+    .message-form textarea {
+      flex: 1; border: none; background: transparent; outline: none; resize: none;
+      font-family: inherit; font-size: 0.95rem; max-height: 120px; padding: 6px 4px; line-height: 1.4;
+    }
+    .input-note { font-size: 0.72rem; color: var(--text-secondary); margin-top: 6px; text-align: center; }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 16px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      transition: all 0.2s ease; border: none;
+    }
+    .btn-primary { background-color: var(--primary); color: #FFFFFF; }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+    .btn-secondary { background-color: #EAEDED; color: var(--text-primary); }
+    .btn-secondary:hover { background-color: #D5DBDB; }
+    .btn-outline { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
+    .btn-outline:hover { background-color: #F8FAFC; }
+    .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center;
+      z-index: 1000; backdrop-filter: blur(2px);
+    }
+    .modal-window {
+      background-color: #FFFFFF; width: 90%; max-width: 680px; border-radius: var(--radius-lg);
+      display: flex; flex-direction: column; max-height: 85vh; box-shadow: var(--shadow-md);
+    }
+    .modal-top { padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .modal-top h3 { font-size: 1.1rem; color: var(--primary); }
+    .close-x { background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-secondary); }
+    .modal-content { padding: 18px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.85rem; font-weight: 600; }
+    .form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.85rem; outline: none; }
+    .code-text { font-family: monospace; font-size: 0.78rem; background-color: #F8FAFC; }
+    .input-with-toggle { display: flex; gap: 8px; }
+    .modal-actions { padding: 12px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="emblem-box">🌾</div>
+      <div>
+        <h1>PDS Citizen Mitra</h1>
+        <span class="sub-title">Public Food Grain Distribution System AI Assistant (Pure HTML/CSS/JS)</span>
+      </div>
+    </div>
+    
+    <div class="header-actions">
+      <div class="status-indicator" id="apiKeyStatusBadge">
+        <span class="status-dot warning" id="statusDot"></span>
+        <span id="statusLabel">API Key Required</span>
+      </div>
+      <button class="btn btn-outline" id="openSettingsBtn">⚙️ Setup API & Document</button>
+    </div>
+  </header>
+
+  <!-- Workspace -->
+  <div class="main-workspace">
+    
+    <!-- Sidebar -->
+    <aside class="side-panel">
+      <div class="panel-section">
+        <h3>📜 Official PDS Guidelines</h3>
+        <div class="doc-info-card">
+          <span class="doc-badge">NFSA / TPDS 2024</span>
+          <p class="doc-desc" id="currentDocSummary">
+            Pre-loaded with official rules on quotas (AAY/PHH), free PMGKAY grain, e-KYC, biometric failure no-denial protocol, and ONORC portability.
+          </p>
+          <div class="doc-actions">
+            <button class="btn btn-sm btn-secondary" id="viewFullDocBtn">🔍 View Rules</button>
+            <button class="btn btn-sm btn-secondary" id="editRulesBtn">✍️ Edit / Upload</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section helpline-box">
+        <h3>🚨 National Citizen Helplines</h3>
+        <div class="helpline-entry">
+          <strong>1967</strong>
+          <span>PDS Helpline (Toll-Free, 24x7)</span>
+        </div>
+        <div class="helpline-entry">
+          <strong>14445</strong>
+          <span>Consumer Affairs</span>
+        </div>
+        <p class="helpline-subtext">
+          Report overcharging, underweight distribution, or denial of grains.
+        </p>
+      </div>
+
+      <div class="panel-section">
+        <h3>🤖 Model</h3>
+        <select id="modelSelect" class="form-select">
+          <option value="gemini-3.8-flash" selected>Gemini 3.8 Flash (High Speed & Precision)</option>
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+          <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+          <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+        </select>
+        <button class="btn btn-sm btn-outline" style="width: 100%" id="clearChatHistoryBtn">
+          🔄 Clear Conversation
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Chat -->
+    <main class="chat-section">
+      
+      <!-- Suggestions -->
+      <div class="suggestions-bar">
+        <span class="suggestions-label">💡 Common Doubts:</span>
+        <div class="suggestions-scroll" id="suggestionsContainer">
+          <button class="chip-btn" data-query="How much grain is a family of 4 entitled to under Priority Household (PHH)?">
+            🌾 PHH Quota (Family of 4)
+          </button>
+          <button class="chip-btn" data-query="Can the FPS ration dealer charge money for rice or wheat under PMGKAY?">
+            🚫 Free Ration / Dealer Overcharging
+          </button>
+          <button class="chip-btn" data-query="What if my fingerprint biometric fails on the e-PoS machine? Can the dealer deny food grains?">
+            ⚠️ Biometric / Machine Failure Rule
+          </button>
+          <button class="chip-btn" data-query="Can a migrant worker collect food grains in another state using One Nation One Ration Card (ONORC)?">
+            💳 ONORC Inter-State Portability
+          </button>
+          <button class="chip-btn" data-query="How do I file a complaint if an FPS dealer gives less grain or refuses stock?">
+            📞 Grievance Redressal & Helpline
+          </button>
+          <button class="chip-btn" data-query="What documents are required to add a newborn child or newly married wife to an existing ration card?">
+            👶 Add Family Member
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages Stream -->
+      <div class="messages-container" id="chatStream">
+        <div class="chat-row bot-row">
+          <div class="avatar-icon">🌾</div>
+          <div class="bubble-container">
+            <div class="bubble-meta">
+              <span class="bot-name">PDS Citizen Mitra</span>
+              <span class="grounded-badge">✓ Grounded in Government Rules</span>
+            </div>
+            <div class="bubble-body">
+              <p>Namaste! I am your <strong>Public Food Grain Distribution System (PDS) AI Assistant</strong>.</p>
+              <p>I answer questions related to ration cards, monthly food grain quotas, biometric authentication rules, and grievance reporting—<strong>strictly verified against official government guidelines</strong>.</p>
+              <p>Click any common doubt above or type your question below.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input -->
+      <div class="input-container">
+        <form id="messageForm" class="message-form">
+          <textarea
+            id="userInputField"
+            rows="1"
+            placeholder="Ask any doubt regarding food grain distribution, quotas, rules, or grievances..."
+            required
+          ></textarea>
+          <button type="submit" id="sendBtn" class="btn btn-primary">
+            <span>Send</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </form>
+        <div class="input-note">
+          <span>🔒 All answers strictly cited from Government Regulatory Guidelines • Press <strong>Enter</strong> to send</span>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-backdrop" id="settingsModal" style="display: none;">
+    <div class="modal-window">
+      <div class="modal-top">
+        <h3>⚙️ Gemini API & Government Document Settings</h3>
+        <button class="close-x" id="closeSettingsBtn">&times;</button>
+      </div>
+      <div class="modal-content">
+        <div class="form-group">
+          <label for="apiKeyInput">Google Gemini API Key:</label>
+          <div class="input-with-toggle">
+            <input type="password" id="apiKeyInput" class="form-control" placeholder="Paste your Gemini API key (e.g. AIzaSy...)" />
+            <button type="button" class="btn btn-sm btn-secondary" id="toggleApiKeyVisibility">Show</button>
+          </div>
+          <small style="font-size:0.72rem; color:#566573;">Key is stored locally in your browser's localStorage.</small>
+        </div>
+
+        <div class="form-group">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label for="customRulesText">Official Government Regulations Document (Ground Truth):</label>
+            <button type="button" class="btn btn-sm btn-outline" id="resetRulesToDefaultBtn">Reset to Default Rules</button>
+          </div>
+          <textarea id="customRulesText" class="form-control code-text" rows="10"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Or Upload Custom Rules (.txt):</label>
+          <input type="file" id="fileUploadInput" accept=".txt" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancelSettingsBtn">Close</button>
+        <button class="btn btn-primary" id="saveSettingsBtn">Save & Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Embedded Government Document & Client Logic -->
+  <script>
+    const DEFAULT_GOVERNMENT_RULES = `
+================================================================================
+GOVERNMENT OF INDIA / DEPARTMENT OF FOOD, CIVIL SUPPLIES & CONSUMER AFFAIRS
+OFFICIAL REGULATORY MANUAL: TARGETED PUBLIC DISTRIBUTION SYSTEM (TPDS)
+& NATIONAL FOOD SECURITY ACT (NFSA) IMPLEMENTATION GUIDELINES
+Document Reference: DOC-NFSA-PDS-2024-REG-V3
+================================================================================
+
+SECTION 1: STATUTORY BASIS & OBJECTIVES
+1.1 The Targeted Public Distribution System (TPDS) operates under the statutory framework of the National Food Security Act (NFSA), 2013 and the Essential Commodities Act, 1955.
+1.2 The primary objective is to provide food and nutritional security by ensuring access to adequate quantity of quality food grains at affordable prices to vulnerable and priority sections of society.
+1.3 All Fair Price Shops (FPS) and food distribution centers are legally bound to follow the provisions laid down in this manual. Non-compliance invites disciplinary and penal action.
+
+--------------------------------------------------------------------------------
+SECTION 2: BENEFICIARY CATEGORIES & GRAIN ENTITLEMENTS
+2.1 Antyodaya Anna Yojana (AAY) - Poorest of the Poor:
+   - Entitlement: 35 kg of food grains per household (family) per month, irrespective of the number of family members.
+   - Grain Breakdown: 20 kg Rice and 15 kg Wheat, or as notified based on regional state grain allocation patterns.
+   - Cost: Under PMGKAY (Pradhan Mantri Garib Kalyan Anna Yojana), food grains are distributed 100% FREE OF COST to all AAY cardholders. Dealers are strictly prohibited from collecting any money.
+
+2.2 Priority Households (PHH):
+   - Entitlement: 5 kg of food grains per person (individual member registered on the card) per month.
+   - Example Calculation: A family of 4 registered members is entitled to 20 kg (4 x 5 kg) per month. A family of 6 is entitled to 30 kg per month.
+   - Cost: Under the notified Government order, NFSA food grains for PHH beneficiaries are distributed 100% FREE OF COST. No dealer may demand distribution fees, handling charges, or packaging charges.
+
+2.3 Non-NFSA / Above Poverty Line (APL / General Category):
+   - Households not covered under NFSA criteria are subject to State-specific schemes where applicable. Normal NFSA monthly quotas do not apply unless a specific State relief scheme is active.
+
+2.4 Fortified Rice Distribution:
+   - To address micronutrient deficiency and anemia, Fortified Rice containing Iron, Folic Acid, and Vitamin B-12 is provided across all FPS centers. This rice has standard grain appearance with Fortified Rice Kernels (FRK) mixed at 1:100 ratio. It is completely safe and beneficial for health.
+
+--------------------------------------------------------------------------------
+SECTION 3: FAIR PRICE SHOP (FPS) RULES & DEALER RESPONSIBILITIES
+3.1 Operating Hours and Days:
+   - Fair Price Shops must remain open from 8:00 AM to 12:00 PM and 4:00 PM to 8:00 PM on all working days, or as per notified state district timings.
+   - Weekly off must be prominently displayed. Shops must never remain closed during active distribution cycles without written permission from the Assistant Food Controller / Food Supply Inspector.
+
+3.2 Mandatory Notice Board Display:
+   - Every FPS must display a visible notice board in the local language showing:
+     a) License number and dealer contact information.
+     b) Opening and closing hours, weekly closed day.
+     c) Current stock position of Wheat, Rice, and Coarse Grains.
+     d) Monthly entitlement quota per category (AAY & PHH) and applicable issue prices (FREE).
+     e) Name, office address, and contact number of the District Grievance Redressal Officer (DGRO) and Food Supply Inspector.
+     f) Toll-Free Citizen Helpline: 1967 and 14445.
+
+3.3 Weighment and e-PoS Integration:
+   - Every Fair Price Shop must use an electronic Point of Sale (e-PoS) device integrated with an Electronic Weighing Scale.
+   - Manual weighing or weighing on uncalibrated mechanical scales is strictly prohibited.
+   - The scale must transmit weight directly to the e-PoS device.
+   - A printed receipt or SMS acknowledgement indicating exact weight dispensed and remaining balance must be issued to the beneficiary.
+
+--------------------------------------------------------------------------------
+SECTION 4: BIOMETRIC AUTHENTICATION & TECHNICAL EXCEPTION RULES
+4.1 Electronic Point of Sale (e-PoS) Authentication:
+   - Grain distribution is authenticated using Aadhaar biometric (Fingerprint or Iris scan) via the e-PoS device.
+   - Any registered adult family member listed on the ration card can authenticate and collect the monthly quota on behalf of the family.
+
+4.2 STRICT NO-DENIAL POLICY (Technical Exceptions):
+   - NO BENEFICIARY SHALL BE DENIED FOOD GRAINS DUE TO BIOMETRIC OR TECHNICAL FAILURE.
+   - If fingerprint scanning fails:
+     Step 1: The dealer must attempt authentication using the IRIS scanner.
+     Step 2: If IRIS scanning is unavailable or fails, Aadhaar OTP authentication must be triggered to the registered mobile number.
+     Step 3: If mobile OTP is unavailable due to network issues or elderly/leprosy/hard-manual-worker finger wear, the dealer must invoke the "Manual Exception Register" protocol (after verification of physical ration card and Aadhaar ID proof).
+   - Denial of food grain due to connectivity issues, server downtime, or biometric mismatch is a punishable offense under Section 8 of NFSA.
+
+4.3 Nominee Facility for Elderly and Differently-Abled:
+   - Households where all members are above 65 years of age, differently-abled, or chronically ill may designate an authorized representative (Nominee) by submitting Form-N to the local Food Inspector. The nominee can authenticate and collect grains on their behalf.
+
+--------------------------------------------------------------------------------
+SECTION 5: ONE NATION ONE RATION CARD (ONORC) - PORTABILITY
+5.1 National Portability Rights:
+   - Any NFSA beneficiary holding an active Aadhaar-seeded ration card can collect their monthly food grains from ANY Fair Price Shop across ANY State or Union Territory in India.
+5.2 Partial Lifting:
+   - If family members are split across locations (e.g., migrant worker in Mumbai and family members in rural Bihar), the worker can lift their individual quota (e.g., 5 kg) at their current work location, and the family in the home village can lift the remaining quota from their local FPS.
+5.3 Registration Requirement:
+   - No new ration card or state transfer application is required to avail ONORC portability. The beneficiary only needs their Ration Card Number or Aadhaar Number at any e-PoS enabled shop.
+
+--------------------------------------------------------------------------------
+SECTION 6: RATION CARD SERVICES & MODIFICATIONS
+6.1 Addition of New Family Member (Newborn / Bride):
+   - Required Documents:
+     a) Application form (Form-3 / State PDS Portal).
+     b) Existing active Ration Card copy.
+     c) Birth Certificate (for children under 5 years) or Aadhaar Card with updated address.
+     d) For newly married spouse: Surrender certificate / Deletion certificate from the previous family ration card, and Marriage Certificate/Aadhaar.
+   - Timeline: The Food Inspector must process and approve additions within 30 days of submission.
+
+6.2 Deletion of Name (Death or Migration):
+   - In case of death of a family member, the head of household must submit a death certificate within 60 days to remove the name and prevent wrongful claim.
+
+6.3 Mandatory e-KYC:
+   - All members listed on a ration card must complete one-time biometric e-KYC at any FPS or Common Service Center (CSC) free of cost to keep the card active.
+
+--------------------------------------------------------------------------------
+SECTION 7: GRIEVANCE REDRESSAL & CONSUMER RIGHTS
+7.1 Reporting Violations:
+   - Citizens can report dealer malpractices including:
+     a) Demanding money for free PMGKAY food grains.
+     b) Giving less quantity than prescribed (under-weighing).
+     c) Forcing beneficiaries to buy non-subsidized groceries (soaps, oil, spices) as a condition to receive ration.
+     d) Refusing grain on pretext of machine failure or stock unavailability.
+     e) Irregular opening of the shop or rude behavior.
+
+7.2 Redressal Channels:
+   - National & State PDS Toll-Free Helpline: 1967 (Toll-Free, 24x7)
+   - Consumer Affairs Helpline: 14445
+   - Online Portal: State Food & Civil Supplies Portal (e.g., nfsa.gov.in / State PDS portal)
+   - Direct Complaint: In writing to the District Grievance Redressal Officer (DGRO) or Sub-Divisional Magistrate (SDM).
+   - Inquiry Period: An inquiry must be initiated within 7 working days, and resolution must be provided to the complainant within 30 days.
+   - Penalties: FPS license suspension, confiscation of security deposit, and criminal prosecution under Essential Commodities Act Section 3/7 for diversion or hoarding.
+================================================================================
+`;
+
+    (function() {
+      let apiKey = localStorage.getItem("PDS_GEMINI_API_KEY") || "";
+      let currentRules = localStorage.getItem("PDS_ACTIVE_RULES") || DEFAULT_GOVERNMENT_RULES;
+      let chatHistory = [];
+
+      const chatStream = document.getElementById("chatStream");
+      const messageForm = document.getElementById("messageForm");
+      const userInputField = document.getElementById("userInputField");
+      const sendBtn = document.getElementById("sendBtn");
+      const modelSelect = document.getElementById("modelSelect");
+      const clearChatHistoryBtn = document.getElementById("clearChatHistoryBtn");
+      const suggestionsContainer = document.getElementById("suggestionsContainer");
+
+      const statusDot = document.getElementById("statusDot");
+      const statusLabel = document.getElementById("statusLabel");
+      const openSettingsBtn = document.getElementById("openSettingsBtn");
+      const viewFullDocBtn = document.getElementById("viewFullDocBtn");
+      const editRulesBtn = document.getElementById("editRulesBtn");
+      const currentDocSummary = document.getElementById("currentDocSummary");
+
+      const settingsModal = document.getElementById("settingsModal");
+      const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+      const cancelSettingsBtn = document.getElementById("cancelSettingsBtn");
+      const saveSettingsBtn = document.getElementById("saveSettingsBtn");
+      const apiKeyInput = document.getElementById("apiKeyInput");
+      const toggleApiKeyVisibility = document.getElementById("toggleApiKeyVisibility");
+      const customRulesText = document.getElementById("customRulesText");
+      const resetRulesToDefaultBtn = document.getElementById("resetRulesToDefaultBtn");
+      const fileUploadInput = document.getElementById("fileUploadInput");
+
+      function updateApiStatus() {
+        if (apiKey && apiKey.trim().length > 5) {
+          statusDot.className = "status-dot active";
+          statusLabel.textContent = "API Key Active";
+        } else {
+          statusDot.className = "status-dot warning";
+          statusLabel.textContent = "API Key Required";
+        }
+      }
+
+      function openModal() {
+        apiKeyInput.value = apiKey;
+        customRulesText.value = currentRules;
+        settingsModal.style.display = "flex";
+      }
+
+      function closeModal() {
+        settingsModal.style.display = "none";
+      }
+
+      function saveSettings() {
+        apiKey = apiKeyInput.value.trim();
+        localStorage.setItem("PDS_GEMINI_API_KEY", apiKey);
+        if (customRulesText.value.trim()) {
+          currentRules = customRulesText.value.trim();
+          localStorage.setItem("PDS_ACTIVE_RULES", currentRules);
+        }
+        updateApiStatus();
+        closeModal();
+      }
+
+      openSettingsBtn.addEventListener("click", openModal);
+      editRulesBtn.addEventListener("click", openModal);
+      viewFullDocBtn.addEventListener("click", openModal);
+      closeSettingsBtn.addEventListener("click", closeModal);
+      cancelSettingsBtn.addEventListener("click", closeModal);
+      saveSettingsBtn.addEventListener("click", saveSettings);
+
+      toggleApiKeyVisibility.addEventListener("click", () => {
+        if (apiKeyInput.type === "password") {
+          apiKeyInput.type = "text";
+          toggleApiKeyVisibility.textContent = "Hide";
+        } else {
+          apiKeyInput.type = "password";
+          toggleApiKeyVisibility.textContent = "Show";
+        }
+      });
+
+      resetRulesToDefaultBtn.addEventListener("click", () => {
+        customRulesText.value = DEFAULT_GOVERNMENT_RULES;
+      });
+
+      fileUploadInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (evt) => { customRulesText.value = evt.target.result; };
+          reader.readAsText(file);
+        }
+      });
+
+      suggestionsContainer.addEventListener("click", (e) => {
+        const chip = e.target.closest(".chip-btn");
+        if (chip && chip.dataset.query) {
+          userInputField.value = chip.dataset.query;
+          handleSend();
+        }
+      });
+
+      clearChatHistoryBtn.addEventListener("click", () => {
+        chatHistory = [];
+        chatStream.innerHTML = `
+          <div class="chat-row bot-row">
+            <div class="avatar-icon">🌾</div>
+            <div class="bubble-container">
+              <div class="bubble-meta">
+                <span class="bot-name">PDS Citizen Mitra</span>
+                <span class="grounded-badge">✓ Conversation Reset</span>
+              </div>
+              <div class="bubble-body">
+                <p>Conversation history has been cleared. How can I help you regarding food grain distribution rules?</p>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      messageForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        handleSend();
+      });
+
+      userInputField.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          handleSend();
+        }
+      });
+
+      async function handleSend() {
+        const text = userInputField.value.trim();
+        if (!text) return;
+
+        if (!apiKey) {
+          alert("Please enter your Gemini API Key in Settings to continue.");
+          openModal();
+          return;
+        }
+
+        appendMessage("user", text);
+        userInputField.value = "";
+        sendBtn.disabled = true;
+
+        const loader = appendTypingIndicator();
+
+        try {
+          const model = modelSelect.value || "gemini-3.8-flash";
+          const answer = await queryGemini(model, text);
+          removeTypingIndicator(loader);
+          appendMessage("bot", answer);
+        } catch (err) {
+          removeTypingIndicator(loader);
+          appendMessage("bot", `⚠️ **Error:** ${err.message}\n\n*Please verify your API key and network connection.*`);
+        } finally {
+          sendBtn.disabled = false;
+        }
+      }
+
+      async function queryGemini(model, query) {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+        const systemPrompt = `You are "PDS Citizen Mitra", an official AI assistant representing the Public Food Grain Distribution System.
+
+OFFICIAL GOVERNMENT RULES & REGULATIONS DOCUMENT:
+============================================================
+${currentRules}
+============================================================
+
+STRICT CITIZEN GUIDANCE & GROUNDING RULES:
+1. STRICT GROUNDING: Answer questions SOLELY and EXCLUSIVELY based on the official rules and regulations in the document provided above.
+2. ZERO HALLUCINATION: Never invent, guess, or extrapolate rules, quotas, prices, or procedures not explicitly mentioned in the text.
+3. OUT OF SCOPE / UNKNOWN QUERIES: If the question cannot be answered using the provided document, state clearly:
+   "According to the official Public Grain Distribution guidelines currently provided, this specific detail is not specified. Please contact your local Fair Price Shop inspector or call the National PDS Toll-Free Helpline at 1967 or 14445."
+4. CITATIONS: In every answer, cite the exact Section number from the rules document (e.g. "[Ref: Section 2.1 - AAY Entitlement]" or "[Ref: Section 4.2 - Strict No-Denial Policy]").
+5. CITIZEN RIGHTS: If the user faces dealer denial, overcharging for free food grains, or machine/fingerprint failure, explain their rights clearly and provide the grievance redressal channel (Toll-Free 1967 / 14445).
+6. MULTILINGUAL: Answer in the language used by the citizen (Hindi, English, etc.) while preserving official terms.`;
+
+        const contents = [
+          ...chatHistory,
+          { role: "user", parts: [{ text: query }] }
+        ];
+
+        const payload = {
+          contents: contents,
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: { temperature: 0.15, maxOutputTokens: 1500 }
+        };
+
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error?.message || `HTTP ${res.status}: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
+
+        chatHistory.push({ role: "user", parts: [{ text: query }] });
+        chatHistory.push({ role: "model", parts: [{ text: candidateText }] });
+        if (chatHistory.length > 12) chatHistory.splice(0, chatHistory.length - 12);
+
+        return candidateText;
+      }
+
+      function appendMessage(sender, text) {
+        const row = document.createElement("div");
+        row.className = `chat-row ${sender === "user" ? "user-row" : "bot-row"}`;
+        
+        const avatar = document.createElement("div");
+        avatar.className = "avatar-icon";
+        avatar.textContent = sender === "user" ? "👤" : "🌾";
+
+        const bubble = document.createElement("div");
+        bubble.className = "bubble-container";
+
+        if (sender === "bot") {
+          const meta = document.createElement("div");
+          meta.className = "bubble-meta";
+          meta.innerHTML = `<span class="bot-name">PDS Citizen Mitra</span><span class="grounded-badge">✓ Verified by Policy</span>`;
+          bubble.appendChild(meta);
+
+          const body = document.createElement("div");
+          body.className = "bubble-body";
+          if (window.marked && typeof window.marked.parse === "function") {
+            body.innerHTML = window.marked.parse(text);
+          } else {
+            body.textContent = text;
+          }
+          bubble.appendChild(body);
+        } else {
+          const body = document.createElement("div");
+          body.className = "bubble-body";
+          body.textContent = text;
+          bubble.appendChild(body);
+        }
+
+        row.appendChild(avatar);
+        row.appendChild(bubble);
+        chatStream.appendChild(row);
+        chatStream.scrollTop = chatStream.scrollHeight;
+      }
+
+      function appendTypingIndicator() {
+        const row = document.createElement("div");
+        row.className = "chat-row bot-row";
+        row.innerHTML = `
+          <div class="avatar-icon">🌾</div>
+          <div class="bubble-container">
+            <div class="typing-dots">
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <span style="font-size: 0.78rem; color: #566573; margin-left: 8px;">Consulting Government Guidelines...</span>
+            </div>
+          </div>
+        `;
+        chatStream.appendChild(row);
+        chatStream.scrollTop = chatStream.scrollHeight;
+        return row;
+      }
+
+      function removeTypingIndicator(el) {
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+      }
+
+      updateApiStatus();
+      if (!apiKey) {
+        setTimeout(openModal, 400);
+      }
+    })();
+  </script>
+</body>
+</html>

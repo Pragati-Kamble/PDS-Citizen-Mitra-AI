@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Public Grain Distribution System - AI Citizen Assistant</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Markdown parser via CDN for formatting responses -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="emblem-box">🌾</div>
+        <div>
+          <h1>PDS Citizen Mitra</h1>
+          <span class="sub-title">Public Food Grain Distribution System AI Assistant</span>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <div class="status-indicator" id="apiKeyStatusBadge">
+          <span class="status-dot warning" id="statusDot"></span>
+          <span id="statusLabel">API Key Required</span>
+        </div>
+        <button class="btn btn-outline" id="openSettingsBtn" title="Settings & Documents">
+          ⚙️ Setup API & Document
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="main-workspace">
+      
+      <!-- Side Panel: Document Details & Helplines -->
+      <aside class="side-panel" id="sidePanel">
+        <div class="panel-section">
+          <h3>📜 Active Government Policy</h3>
+          <div class="doc-info-card">
+            <span class="doc-badge">NFSA / TPDS 2024</span>
+            <p class="doc-desc" id="currentDocSummary">
+              Pre-loaded with official rules on quotas (AAY/PHH), free PMGKAY grain, e-KYC, biometric failure no-denial protocol, and ONORC portability.
+            </p>
+            <div class="doc-actions">
+              <button class="btn btn-sm btn-secondary" id="viewFullDocBtn">🔍 View Rules</button>
+              <button class="btn btn-sm btn-secondary" id="editRulesBtn">✍️ Edit / Upload</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-section helpline-box">
+          <h3>🚨 Official Citizen Helplines</h3>
+          <div class="helpline-entry">
+            <strong>1967</strong>
+            <span>National PDS Helpline (Toll-Free, 24x7)</span>
+          </div>
+          <div class="helpline-entry">
+            <strong>14445</strong>
+            <span>Consumer Grievance Redressal</span>
+          </div>
+          <p class="helpline-subtext">
+            For fair price shop overcharging, underweight grain, or stock denial complaints.
+          </p>
+        </div>
+
+        <div class="panel-section">
+          <h3>🤖 Model Configuration</h3>
+          <select id="modelSelect" class="form-select">
+            <option value="gemini-3.8-flash" selected>Gemini 3.8 Flash (High Speed & Precision)</option>
+            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+            <option value="gemini-2.5-pro">Gemini 2.5 Pro (Deep Reasoning)</option>
+            <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+          </select>
+          <button class="btn btn-sm btn-outline clear-btn" id="clearChatHistoryBtn">
+            🔄 Clear Conversation
+          </button>
+        </div>
+      </aside>
+
+      <!-- Center Chat Section -->
+      <main class="chat-section">
+        
+        <!-- Suggested Questions Bar -->
+        <div class="suggestions-bar">
+          <span class="suggestions-label">💡 Common Doubts:</span>
+          <div class="suggestions-scroll" id="suggestionsContainer">
+            <button class="chip-btn" data-query="How much grain is a family of 4 entitled to under Priority Household (PHH)?">
+              🌾 PHH Quota (Family of 4)
+            </button>
+            <button class="chip-btn" data-query="Can the FPS ration dealer charge money for rice or wheat under PMGKAY?">
+              🚫 Free Ration / Dealer Overcharging
+            </button>
+            <button class="chip-btn" data-query="What if my fingerprint biometric fails on the e-PoS machine? Can the dealer deny food grains?">
+              ⚠️ Biometric / Machine Failure Rule
+            </button>
+            <button class="chip-btn" data-query="Can a migrant worker collect food grains in another state using One Nation One Ration Card (ONORC)?">
+              💳 ONORC Inter-State Portability
+            </button>
+            <button class="chip-btn" data-query="How do I file a complaint if an FPS dealer gives less grain or refuses stock?">
+              📞 Grievance Redressal & Helpline
+            </button>
+            <button class="chip-btn" data-query="What documents are required to add a newborn child or newly married wife to an existing ration card?">
+              👶 Add Family Member
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Messages Flow -->
+        <div class="messages-container" id="chatStream">
+          
+          <!-- Welcome Message -->
+          <div class="chat-row bot-row">
+            <div class="avatar-icon">🌾</div>
+            <div class="bubble-container">
+              <div class="bubble-meta">
+                <span class="bot-name">PDS Citizen Mitra</span>
+                <span class="grounded-badge">✓ Grounded in Government Rules</span>
+              </div>
+              <div class="bubble-body">
+                <p>Namaste! I am your <strong>Public Food Grain Distribution System (PDS) AI Assistant</strong>.</p>
+                <p>I answer questions related to ration cards, monthly food grain quotas, biometric authentication rules, and grievance reporting—<strong>strictly verified against the official government policy document</strong>.</p>
+                <p>Click any common doubt above or ask your question in English, Hindi, or your language.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Message Input Bar -->
+        <div class="input-container">
+          <form id="messageForm" class="message-form">
+            <textarea
+              id="userInputField"
+              rows="1"
+              placeholder="Ask any doubt regarding food grain distribution, quotas, rules, or grievances..."
+              required
+            ></textarea>
+            <button type="submit" id="sendBtn" class="btn btn-primary" title="Send Question">
+              <span>Send</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </form>
+          <div class="input-note">
+            <span>🔒 All answers strictly cited from Government Regulatory Guidelines • Press <strong>Enter</strong> to send</span>
+          </div>
+        </div>
+
+      </main>
+
+    </div>
+  </div>
+
+  <!-- Settings / API Key Modal -->
+  <div class="modal-backdrop" id="settingsModal" style="display: none;">
+    <div class="modal-window">
+      <div class="modal-top">
+        <h3>⚙️ Gemini API & Document Settings</h3>
+        <button class="close-x" id="closeSettingsBtn">&times;</button>
+      </div>
+      <div class="modal-content">
+        
+        <div class="form-group">
+          <label for="apiKeyInput">Google Gemini API Key:</label>
+          <div class="input-with-toggle">
+            <input
+              type="password"
+              id="apiKeyInput"
+              class="form-control"
+              placeholder="Paste your Gemini API key (e.g. AIzaSy...)"
+            />
+            <button type="button" class="btn btn-sm btn-secondary" id="toggleApiKeyVisibility">Show</button>
+          </div>
+          <small class="form-hint">
+            Get your free API key from <a href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI Studio</a>. 
+            The key is stored only locally in your browser's <code>localStorage</code>.
+          </small>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="form-group">
+          <div class="label-row">
+            <label for="customRulesText">Official Government Regulations Document (Ground Truth):</label>
+            <button type="button" class="btn btn-sm btn-outline" id="resetRulesToDefaultBtn">
+              Reset to Default Rules
+            </button>
+          </div>
+          <textarea
+            id="customRulesText"
+            class="form-control code-text"
+            rows="10"
+            placeholder="Paste your government guidelines, circular, or rules text here..."
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Or Upload Government Document (.txt):</label>
+          <input type="file" id="fileUploadInput" accept=".txt" class="file-control" />
+        </div>
+
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancelSettingsBtn">Close</button>
+        <button class="btn btn-primary" id="saveSettingsBtn">Save & Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="government_rules.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
